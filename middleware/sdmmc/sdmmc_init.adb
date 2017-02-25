@@ -29,32 +29,32 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body SDMMC is
+package body SDMMC_Init is
 
    procedure Convert_Card_Identification_Data_Register
-     (W0, W1, W2, W3 : Unsigned_32;
+     (W0, W1, W2, W3 : UInt32;
       Res            : out Card_Identification_Data_Register);
    --  Convert the R2 reply to CID
 
    procedure Convert_Card_Specific_Data_Register
-     (W0, W1, W2, W3 : Unsigned_32;
+     (W0, W1, W2, W3 : UInt32;
       Card_Type : Supported_SD_Memory_Cards;
       CSD : out Card_Specific_Data_Register);
    --  Convert the R2 reply to CSD
 
    procedure Convert_SDCard_Configuration_Register
-     (W0, W1 : Unsigned_32;
+     (W0, W1 : UInt32;
       SCR : out SDCard_Configuration_Register);
    --  Convert W0 (MSB) / W1 (LSB) to SCR.
 
    function Compute_Card_Capacity
      (CSD       : Card_Specific_Data_Register;
-      Card_Type : Supported_SD_Memory_Cards) return Unsigned_64;
+      Card_Type : Supported_SD_Memory_Cards) return UInt64;
    --  Compute the card capacity (in bytes) from the CSD
 
    function Compute_Card_Block_Size
      (CSD       : Card_Specific_Data_Register;
-      Card_Type : Supported_SD_Memory_Cards) return Unsigned_32;
+      Card_Type : Supported_SD_Memory_Cards) return UInt32;
    --  Compute the card block size (in bytes) from the CSD.
 
    function Get_Transfer_Rate
@@ -72,7 +72,7 @@ package body SDMMC is
    procedure Send_Cmd
      (This   : in out SDMMC_Driver'Class;
       Cmd    : SD_Command;
-      Arg    : Unsigned_32;
+      Arg    : UInt32;
       Status : out SD_Error) is
    begin
       Send_Cmd (This, Cmd_Desc (Cmd), Arg, Status);
@@ -85,12 +85,12 @@ package body SDMMC is
    procedure Send_ACmd
      (This   : in out SDMMC_Driver'Class;
       Cmd    : SD_Specific_Command;
-      Rca    : Unsigned_16;
-      Arg    : Unsigned_32;
+      Rca    : UInt16;
+      Arg    : UInt32;
       Status : out SD_Error)
    is
-      S_Arg : constant Unsigned_32 :=
-                Shift_Left (Unsigned_32 (Rca), 16);
+      S_Arg : constant UInt32 :=
+                Shift_Left (UInt32 (Rca), 16);
    begin
       Send_Cmd (This, Cmd_Desc (App_Cmd), S_Arg, Status);
 
@@ -137,9 +137,9 @@ package body SDMMC is
       Info   : out Card_Information;
       Status : out SD_Error)
    is
-      Rsp            : Unsigned_32;
-      W0, W1, W2, W3 : Unsigned_32;
-      Rca            : Unsigned_32;
+      Rsp            : UInt32;
+      W0, W1, W2, W3 : UInt32;
+      Rca            : UInt32;
 
    begin
       --  Reset controller
@@ -391,10 +391,10 @@ package body SDMMC is
    is
       type SD_SCR is array (1 .. 2) of UInt32;
       Tmp  : SD_SCR;
-      Rca  : Unsigned_32;
+      Rca  : UInt32;
 
    begin
-      Rca := Shift_Left (Unsigned_32 (Info.RCA), 16);
+      Rca := Shift_Left (UInt32 (Info.RCA), 16);
 
       Send_Cmd (This, App_Cmd, Rca, Status);
       if Status /= OK then
@@ -422,35 +422,35 @@ package body SDMMC is
    -----------------------------------------------
 
    procedure Convert_Card_Identification_Data_Register
-     (W0, W1, W2, W3 : Unsigned_32;
+     (W0, W1, W2, W3 : UInt32;
       Res : out Card_Identification_Data_Register)
    is
-      Tmp : Byte;
+      Tmp : UInt8;
    begin
       --  Byte 0
-      Tmp := Byte (Shift_Right (W0 and 16#FF00_0000#, 24));
+      Tmp := UInt8 (Shift_Right (W0 and 16#FF00_0000#, 24));
       Res.Manufacturer_ID := Tmp;
 
       --  Byte 1 & 2
-      Tmp := Byte (Shift_Right (W0 and 16#00FF_0000#, 16));
+      Tmp := UInt8 (Shift_Right (W0 and 16#00FF_0000#, 16));
       Res.OEM_Application_ID (1) := Character'Val (Tmp);
-      Tmp := Byte (Shift_Right (W0 and 16#0000_FF00#, 8));
+      Tmp := UInt8 (Shift_Right (W0 and 16#0000_FF00#, 8));
       Res.OEM_Application_ID (2) := Character'Val (Tmp);
 
       --  Byte 3-7
-      Tmp := Byte (W0 and 16#0000_00FF#);
+      Tmp := UInt8 (W0 and 16#0000_00FF#);
       Res.Product_Name (1) := Character'Val (Tmp);
-      Tmp := Byte (Shift_Right (W1 and 16#FF00_0000#, 24));
+      Tmp := UInt8 (Shift_Right (W1 and 16#FF00_0000#, 24));
       Res.Product_Name (2) := Character'Val (Tmp);
-      Tmp := Byte (Shift_Right (W1 and 16#00FF_0000#, 16));
+      Tmp := UInt8 (Shift_Right (W1 and 16#00FF_0000#, 16));
       Res.Product_Name (3) := Character'Val (Tmp);
-      Tmp := Byte (Shift_Right (W1 and 16#0000_FF00#, 8));
+      Tmp := UInt8 (Shift_Right (W1 and 16#0000_FF00#, 8));
       Res.Product_Name (4) := Character'Val (Tmp);
-      Tmp := Byte (W1 and 16#0000_00FF#);
+      Tmp := UInt8 (W1 and 16#0000_00FF#);
       Res.Product_Name (5) := Character'Val (Tmp);
 
       --  Byte 8
-      Tmp := Byte (Shift_Right (W2 and 16#FF00_0000#, 24));
+      Tmp := UInt8 (Shift_Right (W2 and 16#FF00_0000#, 24));
       Res.Product_Revision.Major := UInt4 (Shift_Right (Tmp, 4));
       Res.Product_Revision.Minor := UInt4 (Tmp and 16#0F#);
 
@@ -466,7 +466,7 @@ package body SDMMC is
         Manufacturing_Year (2000 + Shift_Right (W3 and 16#000F_F000#, 12));
 
       --  Byte 15
-      Tmp := Byte (W3 and 16#0000_00FF#);
+      Tmp := UInt8 (W3 and 16#0000_00FF#);
       Res.CID_CRC := Shift_Right (Tmp and 16#FE#, 1);
    end Convert_Card_Identification_Data_Register;
 
@@ -475,38 +475,38 @@ package body SDMMC is
    -----------------------------------------
 
    procedure Convert_Card_Specific_Data_Register
-     (W0, W1, W2, W3 : Unsigned_32;
+     (W0, W1, W2, W3 : UInt32;
       Card_Type      : Supported_SD_Memory_Cards;
       CSD            : out Card_Specific_Data_Register)
    is
-      Tmp : Byte;
+      Tmp : UInt8;
    begin
       --  Analysis of CSD Byte 0
-      Tmp := Byte (Shift_Right (W0 and 16#FF00_0000#, 24));
+      Tmp := UInt8 (Shift_Right (W0 and 16#FF00_0000#, 24));
       CSD.CSD_Structure := Shift_Right (Tmp and 16#C0#, 6);
       CSD.System_Specification_Version := Shift_Right (Tmp and 16#3C#, 2);
       CSD.Reserved := Tmp and 16#03#;
 
       --  Byte 1
-      Tmp := Byte (Shift_Right (W0 and 16#00FF_0000#, 16));
+      Tmp := UInt8 (Shift_Right (W0 and 16#00FF_0000#, 16));
       CSD.Data_Read_Access_Time_1 := Tmp;
 
       --  Byte 2
-      Tmp := Byte (Shift_Right (W0 and 16#0000_FF00#, 8));
+      Tmp := UInt8 (Shift_Right (W0 and 16#0000_FF00#, 8));
       CSD.Data_Read_Access_Time_2 := Tmp;
 
       --  Byte 3
-      Tmp := Byte (W0 and 16#0000_00FF#);
+      Tmp := UInt8 (W0 and 16#0000_00FF#);
       CSD.Max_Data_Transfer_Rate := Tmp;
 
       --  Byte 4 & 5
       CSD.Card_Command_Class :=
         UInt16 (Shift_Right (W1 and 16#FFF0_0000#, 20));
       CSD.Max_Read_Data_Block_Length :=
-        Byte (Shift_Right (W1 and 16#000F_0000#, 16));
+        UInt8 (Shift_Right (W1 and 16#000F_0000#, 16));
 
       --  Byte 6
-      Tmp := Byte (Shift_Right (W1 and 16#0000_FF00#, 8));
+      Tmp := UInt8 (Shift_Right (W1 and 16#0000_FF00#, 8));
       CSD.Partial_Block_For_Read_Allowed := (Tmp and 16#80#) /= 0;
       CSD.Write_Block_Missalignment := (Tmp and 16#40#) /= 0;
       CSD.Read_Block_Missalignment := (Tmp and 16#20#) /= 0;
@@ -519,29 +519,29 @@ package body SDMMC is
          CSD.Device_Size := Shift_Left (UInt32 (Tmp) and 16#03#, 10);
 
          --  Byte 7
-         Tmp := Byte (W1 and 16#0000_00FF#);
+         Tmp := UInt8 (W1 and 16#0000_00FF#);
          CSD.Device_Size := CSD.Device_Size or Shift_Left (UInt32 (Tmp), 2);
 
          --  Byte 8
-         Tmp := Byte (Shift_Right (W2 and 16#FF00_0000#, 24));
+         Tmp := UInt8 (Shift_Right (W2 and 16#FF00_0000#, 24));
          CSD.Device_Size := CSD.Device_Size or
            Shift_Right (UInt32 (Tmp and 16#C0#), 6);
          CSD.Max_Read_Current_At_VDD_Min := Shift_Right (Tmp and 16#38#, 3);
          CSD.Max_Read_Current_At_VDD_Max := Tmp and 16#07#;
 
          --  Byte 9
-         Tmp := Byte (Shift_Right (W2 and 16#00FF_0000#, 16));
+         Tmp := UInt8 (Shift_Right (W2 and 16#00FF_0000#, 16));
          CSD.Max_Write_Current_At_VDD_Min := Shift_Right (Tmp and 16#E0#, 5);
          CSD.Max_Write_Current_At_VDD_Max := Shift_Right (Tmp and 16#1C#, 2);
          CSD.Device_Size_Multiplier := Shift_Left (Tmp and 16#03#, 1);
 
          --  Byte 10
-         Tmp := Byte (Shift_Right (W2 and 16#0000_FF00#, 8));
+         Tmp := UInt8 (Shift_Right (W2 and 16#0000_FF00#, 8));
          CSD.Device_Size_Multiplier :=
            CSD.Device_Size_Multiplier or Shift_Right (Tmp and 16#80#, 7);
       elsif CSD.CSD_Structure = 1 then
          --  Byte 7
-         Tmp := Byte (W1 and 16#0000_00FF#);
+         Tmp := UInt8 (W1 and 16#0000_00FF#);
          CSD.Device_Size := Shift_Left (UInt32 (Tmp), 16);
 
          --  Byte 8 & 9
@@ -549,7 +549,7 @@ package body SDMMC is
            (Shift_Right (W2 and 16#FFFF_0000#, 16));
 
          --  Byte 10
-         Tmp := Byte (Shift_Right (W2 and 16#0000_FF00#, 8));
+         Tmp := UInt8 (Shift_Right (W2 and 16#0000_FF00#, 8));
       else
          --  Unsupported
          null;
@@ -560,20 +560,20 @@ package body SDMMC is
       CSD.Erase_Group_Size_Multiplier := Shift_Left (Tmp and 16#3F#, 1);
 
       --  Byte 11
-      Tmp := Byte (W2 and 16#0000_00FF#);
+      Tmp := UInt8 (W2 and 16#0000_00FF#);
       CSD.Erase_Group_Size_Multiplier :=
         CSD.Erase_Group_Size_Multiplier or Shift_Right (Tmp and 16#80#, 7);
       CSD.Write_Protect_Group_Size := Tmp and 16#7F#;
 
       --  Byte 12
-      Tmp := Byte (Shift_Right (W3 and 16#FF00_0000#, 24));
+      Tmp := UInt8 (Shift_Right (W3 and 16#FF00_0000#, 24));
       CSD.Write_Protect_Group_Enable := (Tmp and 16#80#) /= 0;
       CSD.Manufacturer_Default_ECC := Shift_Right (Tmp and 16#60#, 5);
       CSD.Write_Speed_Factor := Shift_Right (Tmp and 16#1C#, 2);
       CSD.Max_Write_Data_Block_Length := Shift_Left (Tmp and 16#03#, 2);
 
       --  Byte 13
-      Tmp := Byte (Shift_Right (W3 and 16#00FF_0000#, 16));
+      Tmp := UInt8 (Shift_Right (W3 and 16#00FF_0000#, 16));
       CSD.Max_Write_Data_Block_Length :=
         CSD.Max_Read_Data_Block_Length or Shift_Right (Tmp and 16#C0#, 6);
       CSD.Partial_Blocks_For_Write_Allowed := (Tmp and 16#20#) /= 0;
@@ -581,7 +581,7 @@ package body SDMMC is
       CSD.Content_Protection_Application := (Tmp and 16#01#) /= 0;
 
       --  Byte 14
-      Tmp := Byte (Shift_Right (W3 and 16#0000_FF00#, 8));
+      Tmp := UInt8 (Shift_Right (W3 and 16#0000_FF00#, 8));
       CSD.File_Format_Group := (Tmp and 16#80#) /= 0;
       CSD.Copy_Flag := (Tmp and 16#40#) /= 0;
       CSD.Permanent_Write_Protection := (Tmp and 16#20#) /= 0;
@@ -590,7 +590,7 @@ package body SDMMC is
       CSD.ECC_Code := Tmp and 16#03#;
 
       --  Byte 15
-      Tmp := Byte (W3 and 16#0000_00FF#);
+      Tmp := UInt8 (W3 and 16#0000_00FF#);
       CSD.CSD_CRC := Shift_Right (Tmp and 16#FE#, 1);
       CSD.Reserved_4 := 0;
    end Convert_Card_Specific_Data_Register;
@@ -601,17 +601,17 @@ package body SDMMC is
 
    function Compute_Card_Capacity
      (CSD       : Card_Specific_Data_Register;
-      Card_Type : Supported_SD_Memory_Cards) return Unsigned_64
+      Card_Type : Supported_SD_Memory_Cards) return UInt64
    is
    begin
       if Card_Type = Multimedia_Card
         or else CSD.CSD_Structure = 0
       then
-         return Unsigned_64 (CSD.Device_Size + 1) *
+         return UInt64 (CSD.Device_Size + 1) *
            2 ** Natural (CSD.Device_Size_Multiplier + 2) *
            2 ** Natural (CSD.Max_Read_Data_Block_Length);
       elsif CSD.CSD_Structure = 1 then
-         return Unsigned_64 (CSD.Device_Size + 1) * 512 * 1024;
+         return UInt64 (CSD.Device_Size + 1) * 512 * 1024;
       else
          return 0;
       end if;
@@ -623,7 +623,7 @@ package body SDMMC is
 
    function Compute_Card_Block_Size
      (CSD       : Card_Specific_Data_Register;
-      Card_Type : Supported_SD_Memory_Cards) return Unsigned_32
+      Card_Type : Supported_SD_Memory_Cards) return UInt32
    is
    begin
       if Card_Type = Multimedia_Card
@@ -642,20 +642,20 @@ package body SDMMC is
    -------------------------------------------
 
    procedure Convert_SDCard_Configuration_Register
-     (W0, W1 : Unsigned_32;
+     (W0, W1 : UInt32;
       SCR    : out SDCard_Configuration_Register)
    is
    begin
-      SCR := (SCR_Structure         => Byte (Shift_Right (W0, 28) and 16#f#),
-              SD_Spec               => Byte (Shift_Right (W0, 24) and 16#f#),
-              Data_Stat_After_Erase => Byte (Shift_Right (W0, 23) and 1),
-              SD_Security           => Byte (Shift_Right (W0, 20) and 7),
-              SD_Bus_Widths         => Byte (Shift_Right (W0, 16) and 16#f#),
+      SCR := (SCR_Structure         => UInt8 (Shift_Right (W0, 28) and 16#f#),
+              SD_Spec               => UInt8 (Shift_Right (W0, 24) and 16#f#),
+              Data_Stat_After_Erase => UInt8 (Shift_Right (W0, 23) and 1),
+              SD_Security           => UInt8 (Shift_Right (W0, 20) and 7),
+              SD_Bus_Widths         => UInt8 (Shift_Right (W0, 16) and 16#f#),
               SD_Spec3              => (Shift_Right (W0, 15) and 1) /= 0,
-              Ex_Security           => Byte (Shift_Right (W0, 11) and 16#f#),
+              Ex_Security           => UInt8 (Shift_Right (W0, 11) and 16#f#),
               SD_Spec4              => (Shift_Right (W0, 10) and 1) /= 0,
-              Reserved_1            => Byte (Shift_Right (W0, 4) and 16#3f#),
-              CMD_Support           => Byte (Shift_Right (W0, 0) and 16#f#),
+              Reserved_1            => UInt8 (Shift_Right (W0, 4) and 16#3f#),
+              CMD_Support           => UInt8 (Shift_Right (W0, 0) and 16#f#),
               Reserved_2            => W1);
    end Convert_SDCard_Configuration_Register;
 
@@ -696,4 +696,4 @@ package body SDMMC is
       end case;
    end Get_Transfer_Rate;
 
-end SDMMC;
+end SDMMC_Init;

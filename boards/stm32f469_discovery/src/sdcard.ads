@@ -29,10 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Interfaces;           use Interfaces;
 with Ada.Interrupts.Names;
 
-with SDMMC;
+with SDMMC_Init;
 with STM32.SDMMC;
 
 with HAL;               use HAL;
@@ -63,7 +62,7 @@ package SDCard is
 
    function Get_Card_Information
      (Controller : in out SDCard_Controller)
-      return SDMMC.Card_Information
+      return SDMMC_Init.Card_Information
      with Pre => Controller.Card_Present;
    --  Retrieves the card informations
 
@@ -95,7 +94,7 @@ private
    type SDCard_Controller
      (Device : not null access STM32.SDMMC.SDMMC_Controller) is
    limited new HAL.Block_Drivers.Block_Driver with record
-      Info          : SDMMC.Card_Information;
+      Info          : SDMMC_Init.Card_Information;
       Has_Info      : Boolean := False;
       Card_Detected : Boolean := False;
    end record;

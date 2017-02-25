@@ -282,7 +282,7 @@ package body STM32.SDMMC is
    is
       use System.BB.Board_Parameters;
 
-      Div : Unsigned_32;
+      Div : UInt32;
    begin
       Div := (This.CLK_In + UInt32 (Freq) - 1) / UInt32 (Freq);
 
@@ -295,7 +295,7 @@ package body STM32.SDMMC is
       else
          Div := Div - 2;
 
-         if Div > Unsigned_32 (CLKCR_CLKDIV_Field'Last) then
+         if Div > UInt32 (CLKCR_CLKDIV_Field'Last) then
             This.Periph.CLKCR.CLKDIV := CLKCR_CLKDIV_Field'Last;
          else
             This.Periph.CLKCR.CLKDIV := CLKCR_CLKDIV_Field (Div);
@@ -326,7 +326,7 @@ package body STM32.SDMMC is
    overriding procedure Send_Cmd
      (This   : in out SDMMC_Controller;
       Cmd    : Cmd_Desc_Type;
-      Arg    : Unsigned_32;
+      Arg    : UInt32;
       Status : out SD_Error)
    is
       CMD_Reg : CMD_Register  := This.Periph.CMD;
@@ -359,14 +359,14 @@ package body STM32.SDMMC is
                RCA : UInt32;
             begin
                Status := This.Response_R6_Error (Cmd.Cmd, RCA);
-               This.RCA := Unsigned_16 (Shift_Right (RCA, 16));
+               This.RCA := UInt16 (Shift_Right (RCA, 16));
             end;
 
          when Rsp_R7 =>
             Status := This.Response_R7_Error;
 
          when Rsp_Invalid =>
-            Status := HAL.SDMMC.Error;
+            Status := SDMMC_Init.Error;
       end case;
    end Send_Cmd;
 
@@ -377,13 +377,13 @@ package body STM32.SDMMC is
    overriding procedure Read_Cmd
      (This   : in out SDMMC_Controller;
       Cmd    : Cmd_Desc_Type;
-      Arg    : Unsigned_32;
+      Arg    : UInt32;
       Buf    : System.Address;
-      Len    : Unsigned_32;
+      Len    : UInt32;
       Status : out SD_Error)
    is
       Block_Size : DCTRL_DBLOCKSIZE_Field;
-      BS         : Unsigned_32;
+      BS         : UInt32;
       RLen       : constant Natural := Natural (Len / 4);
       Tmp        : Word_Array (1 .. RLen) with Import, Address => Buf;
       Idx        : Natural := Tmp'First;
@@ -483,7 +483,7 @@ package body STM32.SDMMC is
 
    overriding procedure Read_Rsp48
      (This : in out SDMMC_Controller;
-      Rsp  : out Unsigned_32)
+      Rsp  : out UInt32)
    is
    begin
       Rsp := This.Periph.RESP1;
@@ -492,7 +492,7 @@ package body STM32.SDMMC is
 
    overriding procedure Read_Rsp136
      (This           : in out SDMMC_Controller;
-      W0, W1, W2, W3 : out Unsigned_32)
+      W0, W1, W2, W3 : out UInt32)
    is
    begin
       W0 := This.Periph.RESP1;
@@ -851,13 +851,13 @@ package body STM32.SDMMC is
 
    function Initialize
      (This      : in out SDMMC_Controller;
-      SDMMC_CLK : Unsigned_32;
+      SDMMC_CLK : UInt32;
       Info      : out Card_Information) return SD_Error
    is
       Ret : SD_Error;
    begin
       This.CLK_In    := SDMMC_CLK;
-      HAL.SDMMC.Card_Identification_Process (This, Info, Ret);
+      SDMMC_Init.Card_Identification_Process (This, Info, Ret);
       This.Card_Type := Info.Card_Type;
       This.RCA       := Info.RCA;
 
@@ -870,16 +870,16 @@ package body STM32.SDMMC is
 
    function Read_Blocks
      (This : in out SDMMC_Controller;
-      Addr : Unsigned_64;
+      Addr : UInt64;
       Data : out SD_Data) return SD_Error
    is
       subtype UInt32_Data is SD_Data (1 .. 4);
       function To_Data is new Ada.Unchecked_Conversion
         (UInt32, UInt32_Data);
-      R_Addr   : Unsigned_64 := Addr;
+      R_Addr   : UInt64 := Addr;
       N_Blocks : Positive;
       Err      : SD_Error;
-      Idx      : Unsigned_16 := Data'First;
+      Idx      : UInt16 := Data'First;
       Dead     : UInt32 with Unreferenced;
 
    begin
@@ -978,7 +978,7 @@ package body STM32.SDMMC is
 
       end if;
 
-      for J in Unsigned_32'(1) .. SD_DATATIMEOUT loop
+      for J in UInt32'(1) .. SD_DATATIMEOUT loop
          exit when not This.Periph.STA.RXDAVL;
          Dead := Read_FIFO (This);
       end loop;
@@ -994,12 +994,12 @@ package body STM32.SDMMC is
 
    function Read_Blocks_DMA
      (This : in out SDMMC_Controller;
-      Addr       : Unsigned_64;
+      Addr       : UInt64;
       DMA        : STM32.DMA.DMA_Controller;
       Stream     : STM32.DMA.DMA_Stream_Selector;
       Data       : out SD_Data) return SD_Error
    is
-      Read_Address : constant Unsigned_64 :=
+      Read_Address : constant UInt64 :=
                        (if This.Card_Type = High_Capacity_SD_Card
                         then Addr / 512 else Addr);
 
@@ -1079,12 +1079,12 @@ package body STM32.SDMMC is
 
    function Write_Blocks_DMA
      (This : in out SDMMC_Controller;
-      Addr       : Unsigned_64;
+      Addr       : UInt64;
       DMA        : STM32.DMA.DMA_Controller;
       Stream     : STM32.DMA.DMA_Stream_Selector;
       Data       : SD_Data) return SD_Error
    is
-      Write_Address : constant Unsigned_64 :=
+      Write_Address : constant UInt64 :=
                        (if This.Card_Type = High_Capacity_SD_Card
                         then Addr / 512 else Addr);
       --  512 is the min. block size of SD 2.0 card

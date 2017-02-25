@@ -38,7 +38,7 @@
 with System;
 with STM32_SVD.SDIO; use STM32_SVD.SDIO;
 
-with HAL.SDMMC;      use HAL.SDMMC;
+with SDMMC_Init;     use SDMMC_Init;
 
 with STM32.DMA;
 
@@ -50,21 +50,21 @@ package STM32.SDMMC is
 
    function Initialize
      (This      : in out SDMMC_Controller;
-      SDMMC_CLK : Unsigned_32;
+      SDMMC_CLK : UInt32;
       Info      : out Card_Information) return SD_Error;
 
-   type SD_Data is array (Unsigned_16 range <>) of UInt8
+   type SD_Data is array (UInt16 range <>) of UInt8
    with Pack;
 
    function Read_Blocks
      (This : in out SDMMC_Controller;
-      Addr : Unsigned_64;
+      Addr : UInt64;
       Data : out SD_Data) return SD_Error
      with Pre => Data'Length mod 512 = 0;
 
    function Read_Blocks_DMA
      (This   : in out SDMMC_Controller;
-      Addr   : Unsigned_64;
+      Addr   : UInt64;
       DMA    : STM32.DMA.DMA_Controller;
       Stream : STM32.DMA.DMA_Stream_Selector;
       Data   : out SD_Data) return SD_Error
@@ -72,7 +72,7 @@ package STM32.SDMMC is
 
    function Write_Blocks_DMA
      (This   : in out SDMMC_Controller;
-      Addr   : Unsigned_64;
+      Addr   : UInt64;
       DMA    : STM32.DMA.DMA_Controller;
       Stream : STM32.DMA.DMA_Stream_Selector;
       Data   : SD_Data) return SD_Error
@@ -144,8 +144,8 @@ private
    type SDMMC_Controller
      (Periph : not null access STM32_SVD.SDIO.SDIO_Peripheral)
    is limited new SDMMC_Driver with record
-      CLK_In    : Unsigned_32;
-      RCA       : Unsigned_16;
+      CLK_In    : UInt32;
+      RCA       : UInt16;
       Card_Type : Supported_SD_Memory_Cards :=
                     STD_Capacity_SD_Card_V1_1;
       Operation : SDMMC_Operation := No_Operation;
@@ -170,24 +170,24 @@ private
    overriding procedure Send_Cmd
      (This   : in out SDMMC_Controller;
       Cmd    : Cmd_Desc_Type;
-      Arg    : Unsigned_32;
+      Arg    : UInt32;
       Status : out SD_Error);
 
    overriding procedure Read_Cmd
      (This   : in out SDMMC_Controller;
       Cmd    : Cmd_Desc_Type;
-      Arg    : Unsigned_32;
+      Arg    : UInt32;
       Buf    : System.Address;
-      Len    : Unsigned_32;
+      Len    : UInt32;
       Status : out SD_Error);
 
    overriding procedure Read_Rsp48
      (This : in out SDMMC_Controller;
-      Rsp  : out Unsigned_32);
+      Rsp  : out UInt32);
 
    overriding procedure Read_Rsp136
      (This           : in out SDMMC_Controller;
-      W0, W1, W2, W3 : out Unsigned_32);
+      W0, W1, W2, W3 : out UInt32);
 
    function Command_Error
      (Controller : in out SDMMC_Controller) return SD_Error;

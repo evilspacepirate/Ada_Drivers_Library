@@ -30,12 +30,11 @@
 ------------------------------------------------------------------------------
 
 with System;
-with Interfaces; use Interfaces;
 
 with HAL;        use HAL;
 
 --  This package implements the SD and MMC card identification protocol.
-package SDMMC is
+package SDMMC_Init is
 
    type SD_Error is
      (OK,
@@ -80,43 +79,43 @@ package SDMMC is
       High_Capacity_MMC_Card);
 
    type Card_Specific_Data_Register is record
-      CSD_Structure                    : Byte;
-      System_Specification_Version     : Byte;
-      Reserved                         : Byte;
-      Data_Read_Access_Time_1          : Byte;
-      Data_Read_Access_Time_2          : Byte; --  In CLK Cycles
-      Max_Data_Transfer_Rate           : Byte;
+      CSD_Structure                    : UInt8;
+      System_Specification_Version     : UInt8;
+      Reserved                         : UInt8;
+      Data_Read_Access_Time_1          : UInt8;
+      Data_Read_Access_Time_2          : UInt8; --  In CLK Cycles
+      Max_Data_Transfer_Rate           : UInt8;
       Card_Command_Class               : UInt16;
-      Max_Read_Data_Block_Length       : Byte;
+      Max_Read_Data_Block_Length       : UInt8;
       Partial_Block_For_Read_Allowed   : Boolean;
       Write_Block_Missalignment        : Boolean;
       Read_Block_Missalignment         : Boolean;
       DSR_Implemented                  : Boolean;
-      Reserved_2                       : Byte;
+      Reserved_2                       : UInt8;
       Device_Size                      : UInt32;
-      Max_Read_Current_At_VDD_Min      : Byte;
-      Max_Read_Current_At_VDD_Max      : Byte;
-      Max_Write_Current_At_VDD_Min     : Byte;
-      Max_Write_Current_At_VDD_Max     : Byte;
-      Device_Size_Multiplier           : Byte;
-      Erase_Group_Size                 : Byte;
-      Erase_Group_Size_Multiplier      : Byte;
-      Write_Protect_Group_Size         : Byte;
+      Max_Read_Current_At_VDD_Min      : UInt8;
+      Max_Read_Current_At_VDD_Max      : UInt8;
+      Max_Write_Current_At_VDD_Min     : UInt8;
+      Max_Write_Current_At_VDD_Max     : UInt8;
+      Device_Size_Multiplier           : UInt8;
+      Erase_Group_Size                 : UInt8;
+      Erase_Group_Size_Multiplier      : UInt8;
+      Write_Protect_Group_Size         : UInt8;
       Write_Protect_Group_Enable       : Boolean;
-      Manufacturer_Default_ECC         : Byte;
-      Write_Speed_Factor               : Byte;
-      Max_Write_Data_Block_Length      : Byte;
+      Manufacturer_Default_ECC         : UInt8;
+      Write_Speed_Factor               : UInt8;
+      Max_Write_Data_Block_Length      : UInt8;
       Partial_Blocks_For_Write_Allowed : Boolean;
-      Reserved_3                       : Byte;
+      Reserved_3                       : UInt8;
       Content_Protection_Application   : Boolean;
       File_Format_Group                : Boolean;
       Copy_Flag                        : Boolean;
       Permanent_Write_Protection       : Boolean;
       Temporary_Write_Protection       : Boolean;
-      File_Format                      : Byte;
-      ECC_Code                         : Byte;
-      CSD_CRC                          : Byte;
-      Reserved_4                       : Byte; --  Always 1
+      File_Format                      : UInt8;
+      ECC_Code                         : UInt8;
+      CSD_CRC                          : UInt8;
+      Reserved_4                       : UInt8; --  Always 1
    end record;
 
    type Card_Revision is record
@@ -145,36 +144,36 @@ package SDMMC is
    end record;
 
    type Card_Identification_Data_Register is record
-      Manufacturer_ID       : Byte;
+      Manufacturer_ID       : UInt8;
       OEM_Application_ID    : String (1 .. 2);
       Product_Name          : String (1 .. 5);
       Product_Revision      : Card_Revision;
       Product_Serial_Number : UInt32;
-      Reserved_1            : Byte;
+      Reserved_1            : UInt8;
       Manufacturing_Date    : Manufacturing_Date_Type;
-      CID_CRC               : Byte;
-      Reserved_2            : Byte; --  Always 1
+      CID_CRC               : UInt8;
+      Reserved_2            : UInt8; --  Always 1
    end record;
 
    type SDCard_Configuration_Register is record
-      SCR_Structure         : Byte;
-      SD_Spec               : Byte;
-      Data_Stat_After_Erase : Byte;
-      SD_Security           : Byte;
-      SD_Bus_Widths         : Byte;
+      SCR_Structure         : UInt8;
+      SD_Spec               : UInt8;
+      Data_Stat_After_Erase : UInt8;
+      SD_Security           : UInt8;
+      SD_Bus_Widths         : UInt8;
       SD_Spec3              : Boolean;
-      Ex_Security           : Byte;
+      Ex_Security           : UInt8;
       SD_Spec4              : Boolean;
-      Reserved_1            : Byte;
-      CMD_Support           : Byte;
+      Reserved_1            : UInt8;
+      CMD_Support           : UInt8;
       Reserved_2            : UInt32;
    end record;
 
    type Card_Information is record
       SD_CSD          : Card_Specific_Data_Register;
       SD_CID          : Card_Identification_Data_Register;
-      Card_Capacity   : Unsigned_64;
-      Card_Block_Size : Unsigned_32;
+      Card_Capacity   : UInt64;
+      Card_Block_Size : UInt32;
       RCA             : UInt16; --  SD relative card address
       Card_Type       : Supported_SD_Memory_Cards :=
                           STD_Capacity_SD_Card_V1_1;
@@ -336,44 +335,44 @@ package SDMMC is
    procedure Send_Cmd
      (This   : in out SDMMC_Driver;
       Cmd    : Cmd_Desc_Type;
-      Arg    : Unsigned_32;
+      Arg    : UInt32;
       Status : out SD_Error) is abstract;
    --  Send a command (without data transfer) and wait for result.
 
    procedure Send_Cmd
      (This   : in out SDMMC_Driver'Class;
       Cmd    : SD_Command;
-      Arg    : Unsigned_32;
+      Arg    : UInt32;
       Status : out SD_Error);
    --  Wrapper for Send_Cmd using a generic command.
 
    procedure Send_ACmd
      (This   : in out SDMMC_Driver'Class;
       Cmd    : SD_Specific_Command;
-      Rca    : Unsigned_16;
-      Arg    : Unsigned_32;
+      Rca    : UInt16;
+      Arg    : UInt32;
       Status : out SD_Error);
    --  Send application specific command
 
    procedure Read_Cmd
      (This   : in out SDMMC_Driver;
       Cmd    : Cmd_Desc_Type;
-      Arg    : Unsigned_32;
+      Arg    : UInt32;
       Buf    : System.Address;
-      Len    : Unsigned_32;
+      Len    : UInt32;
       Status : out SD_Error) is abstract;
    --  Read data command
 
    procedure Read_Rsp48
      (This : in out SDMMC_Driver;
-      Rsp  : out Unsigned_32) is abstract;
+      Rsp  : out UInt32) is abstract;
    --  Read the 32 interesting bits of the last 48bits response (start bit,
    --  transmission bit, command index, crc and end bit are discarded).
    --  Cannot fail.
 
    procedure Read_Rsp136
      (This           : in out SDMMC_Driver;
-      W0, W1, W2, W3 : out Unsigned_32) is abstract;
+      W0, W1, W2, W3 : out UInt32) is abstract;
    --  Read the 128 interesting bits of the last 136 bit response.
    --  W0 is the MSB, W3 the LSB
    --  Cannot fail.
@@ -463,4 +462,4 @@ package SDMMC is
 
    SD_MAX_VOLT_TRIAL           : constant := 16#0000_FFFF#;
 
-end SDMMC;
+end SDMMC_Init;
