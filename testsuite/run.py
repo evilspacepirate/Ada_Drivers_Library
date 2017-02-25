@@ -5,6 +5,7 @@ import difflib
 import os
 import os.path
 import subprocess
+import sys
 
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -120,7 +121,7 @@ class Testcase:
 
         # Compare the actual output and the expected one
         if expected_output != stdout:
-            return 'Output mismatch:\n{}'.format(''.join(
+            return 'Output mismatch:\n{}'.format('\n'.join(
                 difflib.unified_diff(
                     expected_output,
                     stdout,
@@ -160,6 +161,7 @@ parser.add_argument(
 
 
 def main(args):
+    at_least_one_error = False
     for tc in find_testcases():
 
         # Don't run the testcase if we have filters and none of them matches it
@@ -168,10 +170,12 @@ def main(args):
 
         error = tc.run(args)
         if error:
+            at_least_one_error = True
             print('\x1b[31mFAIL\x1b[0m {}:\n{}'.format(tc.name, error))
         else:
             print('\x1b[32mOK\x1b[0m   {}'.format(tc.name))
-
+    if at_least_one_error:
+        sys.exit(1)
 
 if __name__ == '__main__':
     main(parser.parse_args())

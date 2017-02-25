@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/AdaCore/Ada_Drivers_Library.svg?branch=master)](https://travis-ci.org/AdaCore/Ada_Drivers_Library)
+[![Build status](https://ci.appveyor.com/api/projects/status/dvay075xkwxgppwm?svg=true)](https://ci.appveyor.com/project/AdaCore/ada-drivers-library)
 
 # Warning!
 
@@ -80,6 +81,7 @@ GitHub page.
 * ARM
  * STM32F4/7 USB drivers
 * Components
+ * BlueNRG-MS (Bluetooth Low Energy Network Processor)
 * Services
  * Bluetooth Low Energy stack
  * USB stack

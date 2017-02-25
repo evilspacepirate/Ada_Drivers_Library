@@ -35,6 +35,7 @@ with Ada.Interrupts.Names;
 with SDMMC;
 with STM32.SDMMC;
 
+with HAL;               use HAL;
 with HAL.Block_Drivers; use HAL.Block_Drivers;
 
 package SDCard is
@@ -68,12 +69,12 @@ package SDCard is
 
    function Block_Size
      (Controller : in out SDCard_Controller)
-     return Unsigned_32;
+     return UInt32;
    --  The insterted card block size. 512 Bytes for sd-cards
 
    overriding function Read
      (Controller   : in out SDCard_Controller;
-      Block_Number : Unsigned_64;
+      Block_Number : UInt64;
       Data         : out Block) return Boolean
      with Pre => Data'Size < 2 ** 16;
    --  Reads Data.
@@ -82,7 +83,7 @@ package SDCard is
 
    overriding function Write
      (Controller   : in out SDCard_Controller;
-      Block_Number : Unsigned_64;
+      Block_Number : UInt64;
       Data         : Block) return Boolean
      with Pre => Data'Size < 2 ** 16;
    --  Writes Data.
